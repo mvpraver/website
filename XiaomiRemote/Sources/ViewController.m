@@ -15,9 +15,29 @@
     config.allowsInlineMediaPlayback = YES;
     config.mediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypeNone;
 
-    // Preserve ws-scrcpy's two-canvas grid: video-layer below, touch-layer above.
-    // Hide only the web toolbar/status and make the mirror scale to the iPhone.
+    // Inject before ws-scrcpy starts.  The stream WebSocket carries multiplexed
+    // channels.  Once session metadata (channel 4) arrives, the scrcpy control
+    // socket is ready.  Send channel 2 (CONTROL) + scrcpy control message 10
+    // (SET_DISPLAY_POWER) + 0 (OFF).  This turns the *physical* Redmi display
+    // off without starting a second scrcpy.exe process on Windows.
     NSString *cleanUI = @"(function(){"
+        "var NativeWS=window.WebSocket;"
+        "if(NativeWS){"
+          "var hook=function(ws){"
+            "var poweredOff=false;"
+            "ws.addEventListener('message',function(ev){"
+              "if(poweredOff||!(ev.data instanceof ArrayBuffer))return;"
+              "var data=new Uint8Array(ev.data);"
+              "if(data.length>0&&data[0]===4){"
+                "poweredOff=true;"
+                "var off=function(){try{if(ws.readyState===NativeWS.OPEN){ws.send(new Uint8Array([2,10,0]));}}catch(e){}};"
+                "setTimeout(off,80);setTimeout(off,450);setTimeout(off,1200);"
+              "}"
+            "});"
+            "return ws;"
+          "};"
+          "window.WebSocket=new Proxy(NativeWS,{construct:function(Target,args){return hook(Reflect.construct(Target,args));}});"
+        "}"
         "var meta=document.createElement('meta');"
         "meta.name='viewport';"
         "meta.content='width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover';"
@@ -47,9 +67,6 @@
     self.webView.allowsLinkPreview = NO;
     self.webView.userInteractionEnabled = YES;
 
-    // Do NOT disable WKWebView's UIScrollView: on iOS that can prevent the web
-    // touch pipeline from delivering touchstart/touchmove to the touch canvas.
-    // Page scrolling is blocked by CSS instead.
     self.webView.scrollView.backgroundColor = UIColor.blackColor;
     self.webView.scrollView.bounces = NO;
     self.webView.scrollView.scrollEnabled = YES;
@@ -67,8 +84,6 @@
         [self.webView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor]
     ]];
 
-    // H.264 is forced because this Xiaomi/iPhone combination does not decode
-    // the H.265 stream correctly. deviceKind=phone forces ws-scrcpy Touch mode.
     NSString *urlString = @"https://skynote.tailc55cbf.ts.net/embed.html?device=9b8e6c50&host=skynote.tailc55cbf.ts.net&port=443&secure=true&codec=h264&maxFps=30&bitrate=6000000&maxSize=1920&audio=false&keyboard=true&deviceKind=phone";
     NSURL *url = [NSURL URLWithString:urlString];
     NSURLRequest *request = [NSURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData timeoutInterval:30.0];
