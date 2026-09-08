@@ -1,0 +1,51 @@
+name: Build Xiaomi Remote IPA
+
+on:
+  push:
+    paths:
+      - 'XiaomiRemote/**'
+      - '.github/workflows/xiaomi-remote.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        working-directory: XiaomiRemote
+        run: xcodegen generate
+
+      - name: Build unsigned iOS app
+        working-directory: XiaomiRemote
+        run: |
+          xcodebuild \
+            -project XiaomiRemote.xcodeproj \
+            -scheme XiaomiRemote \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            AD_HOC_CODE_SIGNING_ALLOWED=YES \
+            build
+
+      - name: Package IPA
+        working-directory: XiaomiRemote
+        run: |
+          mkdir -p Payload
+          APP_PATH=$(find build/Build/Products/Release-iphoneos -maxdepth 1 -name '*.app' -print -quit)
+          test -n "$APP_PATH"
+          cp -R "$APP_PATH" Payload/
+          /usr/bin/zip -qry XiaomiRemote.ipa Payload
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: XiaomiRemote-IPA
+          path: XiaomiRemote/XiaomiRemote.ipa
+          if-no-files-found: error
