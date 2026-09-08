@@ -12,17 +12,18 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.mvpraver.xiaomiremote
-        PRODUCT_NAME: Xiaomi Remote
+        PRODUCT_NAME: RedmiNote9Pro
         TARGETED_DEVICE_FAMILY: "1"
         IPHONEOS_DEPLOYMENT_TARGET: "15.0"
         CODE_SIGN_STYLE: Manual
         DEVELOPMENT_TEAM: ""
         ENABLE_BITCODE: NO
         SWIFT_VERSION: "5.0"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
     info:
       path: Sources/Info.plist
       properties:
-        CFBundleDisplayName: Xiaomi Remote
+        CFBundleDisplayName: Redmi Note 9 Pro
         UILaunchScreen: {}
         UIRequiresFullScreen: true
         UISupportedInterfaceOrientations:
