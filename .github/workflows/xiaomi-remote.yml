@@ -16,6 +16,18 @@ jobs:
       - name: Install XcodeGen
         run: brew install xcodegen
 
+      - name: Prepare app icon
+        working-directory: XiaomiRemote
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64
+          src = Path('Sources/Icon180.base64.txt')
+          dst = Path('Sources/Assets.xcassets/AppIcon.appiconset/Icon180.png')
+          dst.write_bytes(base64.b64decode(src.read_text().strip()))
+          print('icon bytes:', dst.stat().st_size)
+          PY
+
       - name: Generate Xcode project
         working-directory: XiaomiRemote
         run: xcodegen generate
@@ -41,11 +53,11 @@ jobs:
           APP_PATH=$(find build/Build/Products/Release-iphoneos -maxdepth 1 -name '*.app' -print -quit)
           test -n "$APP_PATH"
           cp -R "$APP_PATH" Payload/
-          /usr/bin/zip -qry XiaomiRemote.ipa Payload
+          /usr/bin/zip -qry RedmiNote9Pro.ipa Payload
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
-          name: XiaomiRemote-IPA
-          path: XiaomiRemote/XiaomiRemote.ipa
+          name: RedmiNote9Pro-IPA
+          path: XiaomiRemote/RedmiNote9Pro.ipa
           if-no-files-found: error
