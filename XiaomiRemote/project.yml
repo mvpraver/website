@@ -1,0 +1,33 @@
+name: XiaomiRemote
+options:
+  bundleIdPrefix: com.mvpraver
+  deploymentTarget:
+    iOS: "15.0"
+targets:
+  XiaomiRemote:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.mvpraver.xiaomiremote
+        PRODUCT_NAME: Xiaomi Remote
+        TARGETED_DEVICE_FAMILY: "1"
+        IPHONEOS_DEPLOYMENT_TARGET: "15.0"
+        CODE_SIGN_STYLE: Manual
+        DEVELOPMENT_TEAM: ""
+        ENABLE_BITCODE: NO
+        SWIFT_VERSION: "5.0"
+    info:
+      path: Sources/Info.plist
+      properties:
+        CFBundleDisplayName: Xiaomi Remote
+        UILaunchScreen: {}
+        UIRequiresFullScreen: true
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: false
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
